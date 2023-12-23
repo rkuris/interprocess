@@ -1,6 +1,10 @@
 use {
     super::{super::ToLocalSocketName, LocalSocketStream},
-    std::io,
+    std::{
+        fmt::{self, Debug, Formatter},
+        io,
+        os::fd::FromRawFd,
+    },
 };
 
 impmod! {local_socket::tokio,
@@ -124,4 +128,9 @@ multimacro! {
     forward_debug,
     derive_asraw(unix),
 }
-// TODO: incoming
+impl FromRawFd for LocalSocketListener {
+    /// Create a listener from a raw file descriptor
+    unsafe fn from_raw_fd(fd: i32) -> Self {
+        Self(unsafe {LocalSocketListenerImpl::from_raw_fd(fd)})
+    }
+}

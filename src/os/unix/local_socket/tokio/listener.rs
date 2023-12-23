@@ -5,7 +5,9 @@ use {
         fmt::{self, Debug, Formatter},
         io,
         os::unix::io::AsRawFd,
+        os::fd::FromRawFd,
     },
+
 };
 
 pub struct LocalSocketListener(UdStreamListener);
@@ -38,3 +40,12 @@ multimacro! {
     forward_as_handle(unix),
     forward_try_handle(UdStreamListener, unix),
 }
+
+impl FromRawFd for LocalSocketListener {
+    unsafe fn from_raw_fd(fd: i32) -> Self {
+        Self {
+            inner: unsafe { UdStreamListener::from_raw_fd(fd).expect("from_raw_fd failed") },
+        }
+    }
+}
+
