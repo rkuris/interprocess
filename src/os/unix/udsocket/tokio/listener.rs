@@ -1,7 +1,7 @@
 use crate::os::unix::udsocket::{
     tokio::UdStream, ToUdSocketPath, UdSocketPath, UdStreamListener as SyncUdStreamListener,
 };
-use std::{io, os::unix::net::UnixListener as StdUdStreamListener};
+use std::{io, os::{unix::net::UnixListener as StdUdStreamListener, fd::FromRawFd}};
 use tokio::net::UnixListener as TokioUdStreamListener;
 
 /// A Tokio-based Unix domain byte stream socket server, listening for connections.
@@ -121,6 +121,13 @@ impl UdStreamListener {
     /// Listens for incoming connections to the socket, asynchronously waiting a client is connected.
     pub async fn accept(&self) -> io::Result<UdStream> {
         Ok(self.0.accept().await?.0.into())
+    }
+}
+impl FromRawFd for UdStreamListener {
+    unsafe fn from_raw_fd(fd: std::os::unix::prelude::RawFd) -> Self {
+        let unix_listener = unsafe {std::os::unix::net::UnixListener::from_raw_fd(fd) };
+        let tokio_listener = TokioUdStreamListener::from_std(unix_listener);
+        Self(tokio_listener.unwrap())
     }
 }
 tokio_wrapper_trait_impls!(

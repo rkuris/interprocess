@@ -1,7 +1,6 @@
 use {
     super::{super::ToLocalSocketName, LocalSocketStream},
     std::{
-        fmt::{self, Debug, Formatter},
         io,
         os::fd::FromRawFd,
     },
